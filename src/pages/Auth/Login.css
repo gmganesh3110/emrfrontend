@@ -1,0 +1,26 @@
+/* Centering the login form on the page */
+.center-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f0f2f5; /* Light background for contrast */
+    margin: 0;
+  }
+  
+  /* Styling the card container */
+  .login-card {
+    width: 400px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+
+  .login-btn-content{
+    width: 100%;
+    text-align: center;
+  }
+  
+  .login-btn{
+    width: 50% !important;
+  }
