@@ -1,12 +1,41 @@
-import { Button, Form, Input, Card } from "antd";
+import { Button, Form, Input, Card, message } from "antd";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
 import "./Login.css";
-
+import { Navigate, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUser } from "../../store/authStore/userSlice";
+import { loginaxios } from "../../services/AxiosService";
+interface LoginUser {
+  email: string;
+  password: string;
+}
 export default function Login() {
-  const onFinish = (values: any) => {
-    console.log("Received values of form: ", values);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const token: string | null = localStorage.getItem("token");
+  if (token) {
+    return <Navigate to="/" />;
+  }
+  const onFinish = async (values: LoginUser) => {
+    const res: any = await loginaxios(
+      "http://localhost:3000/auth/login",
+      values
+    );
+    if (res?.status === 201) {
+      localStorage.setItem("token", res?.data.token);
+      dispatch(setUser(res?.data));
+      navigate("/");
+    } else {
+      if (res?.response) {
+        message.error(
+          res?.response?.data?.message ||
+            "Something went wrong. Please try again."
+        );
+      } else {
+        message.error("Network error. Please check your internet connection.");
+      }
+    }
   };
-
   return (
     <div className="center-container">
       <Card className="login-card">

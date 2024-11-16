@@ -1,8 +1,8 @@
 import { Button, Table } from "antd";
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./UserRole.css";
+import { getaxios } from "../../services/AxiosService";
 const UserRoleList: React.FC = () => {
   const [userRoles, setUserRoles] = useState([]);
   const columns: any = [
@@ -34,7 +34,7 @@ const UserRoleList: React.FC = () => {
   }, []);
   const getAllUserRoles = async () => {
     try {
-      const res: any = await axios.get("http://localhost:3000/user-roles");
+      const res: any = await getaxios("http://localhost:3000/user-roles", {});
       setUserRoles(res?.data[0]);
     } catch (err) {
       console.log(err);

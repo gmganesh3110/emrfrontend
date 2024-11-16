@@ -12,10 +12,14 @@ import {
   TeamOutlined,
   UserOutlined,
   ProfileOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Button, Menu } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import "./MenuLayout.css";
+import { useDispatch } from "react-redux";
+import { clearUser } from "../store/authStore/userSlice";
 
 type MenuItem = Required<MenuProps>["items"][number];
 
@@ -99,27 +103,48 @@ interface MenuItemsProps {
 
 const MenuItems: React.FC<MenuItemsProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
-
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const toggleCollapsed = () => {
     setCollapsed(!collapsed);
   };
 
+  const handleLogout = () => {
+    dispatch(clearUser());
+    localStorage.removeItem('token');
+    navigate('/login')
+  };
   return (
     <div style={{ display: "flex" }}>
-      <div>
-        <Button
-          type="primary"
-          onClick={toggleCollapsed}
-          style={{ marginBottom: 16 }}
-        >
-          {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-        </Button>
-        <Menu
-          defaultSelectedKeys={["1"]}
-          mode="inline"
-          inlineCollapsed={collapsed}
-          items={items}
-        />
+      <div style={{height:'90vh'}}>
+        <div className="side-barcontainer">
+          <Button
+            type="primary"
+            onClick={toggleCollapsed}
+            style={{ marginBottom: 16 }}
+          >
+            {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          </Button>
+          <Menu
+            defaultSelectedKeys={["1"]}
+            mode="inline"
+            inlineCollapsed={collapsed}
+            items={items}
+          />
+        </div>
+        <div style={{ marginBottom: "auto", padding: "10px" }}>
+          <Menu
+            mode="inline"
+            items={[
+              {
+                key: "logout",
+                label: "Logout",
+                icon: <LogoutOutlined />,
+                onClick: handleLogout,
+              },
+            ]}
+          />
+        </div>
       </div>
       <div style={{ marginLeft: 20, flex: 1 }}>{children}</div>
     </div>
