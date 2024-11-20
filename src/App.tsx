@@ -1,13 +1,8 @@
-import {
-  Route,
-  BrowserRouter as Router,
-  Routes,
-} from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Login from "./pages/Auth/Login";
 import Appointments from "./pages/Appointments/Appointments";
 import MenuItems from "./layout/MenuLayout";
 import DoctorsList from "./pages/Doctors/DoctorsList";
-import AddDoctor from "./pages/Doctors/AddDoctor";
 import UserRoleList from "./pages/UserRole/UserRoleList";
 import AddUserRole from "./pages/UserRole/AddUserRole";
 import Specialization from "./pages/Specializations/Specialization";
@@ -35,16 +30,6 @@ function App() {
             <ProtectedRoute>
               <MenuItems>
                 <DoctorsList />
-              </MenuItems>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/adddoctor"
-          element={
-            <ProtectedRoute>
-              <MenuItems>
-                <AddDoctor />
               </MenuItems>
             </ProtectedRoute>
           }

@@ -1,0 +1,36 @@
+.timeslot-header-content {
+  display: flex;
+  justify-content: space-between;
+  margin-inline: 1rem;
+  margin-block: 0.5rem;
+}
+.form-container {
+  display: table;
+  width: 100%;
+}
+
+.form-row {
+  display: table-row;
+  margin: 16px;
+}
+
+.form-label {
+  display: table-cell;
+  width: 30%;
+  text-align: left;
+  vertical-align: middle;
+  font-weight: 500;
+  padding-right: 16px;
+}
+
+.ant-picker,
+.ant-input-number {
+  display: table-cell;
+  width: 100%;
+}
+
+.save-btn-content{
+  display: flex;
+  justify-content: end;
+  margin-right: 1rem;
+}

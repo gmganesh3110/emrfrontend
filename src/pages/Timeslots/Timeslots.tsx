@@ -1,314 +1,251 @@
 import React, { useEffect, useState } from "react";
+import { getaxios, postaxios } from "../../services/AxiosService";
 import {
-  Select,
-  TimePicker,
   Button,
-  Table,
-  Row,
-  Col,
-  Checkbox,
+  InputNumber,
   message,
+  Modal,
+  Select,
+  Switch,
+  Table,
+  TimePicker,
 } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
-import axios from "axios";
 import moment from "moment";
+import "./Timeslots.css";
+import { useSelector } from "react-redux";
 
-const { RangePicker } = TimePicker;
-
-const TimeSlots: React.FC = () => {
-  const [doctor, setDoctor] = useState<number | null>(null);
+const Timeslots: React.FC = () => {
   const [doctors, setDoctors] = useState<any[]>([]);
-  const [weeklySlots, setWeeklySlots] = useState<any>({});
-  const [doctorTimeSlotData, setDoctorTimeSlotData] = useState<any>([]);
-// 
-  const daysOfWeek = [
-    { id: 1, name: "Monday" },
-    { id: 2, name: "Tuesday" },
-    { id: 3, name: "Wednesday" },
-    { id: 4, name: "Thursday" },
-    { id: 5, name: "Friday" },
-    { id: 6, name: "Saturday" },
-    { id: 7, name: "Sunday" },
-  ];
+  const [doctorId, setDoctorId] = useState<number | null>(null);
+  const [showAddTimeslot, setShowAddTimeslot] = useState<boolean>(false);
+  const [fromTime, setFromTime] = useState<string | null>(null);
+  const [toTime, setToTime] = useState<string | null>(null);
+  const [appointmentsCount, setAppointmentsCount] = useState<number>(0);
+  const [timeslots, setTimeslots] = useState<any[]>([]);
+  const User = useSelector((state: any) => state.user);
 
-  const getTimeSlotDataforDoctor = async (doctorId: number) => {
-    try {
-      const res: any = await axios.get(
-        `http://localhost:3000/timeslots/${doctorId}`
-      );
-      setDoctorTimeSlotData(res?.data[0]);
-      const updatedSlots: any = {};
-      res?.data[0]?.forEach((timeslot: any) => {
-        const day = daysOfWeek.find((day) => day.id === timeslot.day)?.name;
-        if (day) {
-          if (!updatedSlots[day]) {
-            updatedSlots[day] = {
-              active: true,
-              timeRanges: [],
-            };
-          }
-          updatedSlots[day].timeRanges.push([
-            moment(timeslot.startTime, "hh:mm A"),
-            moment(timeslot.endTime, "hh:mm A"),
-          ]);
-        }
-      });
-
-      setWeeklySlots(updatedSlots);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  useEffect(() => {
-    getAllDoctors();
-  }, []);
-
-  const getAllDoctors = async () => {
-    try {
-      const res: any = await axios.get(
-        "http://localhost:3000/users/getalldoctors"
-      );
-      setDoctors(res?.data[0]);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const handleAddTimeRange = (day: any) => {
-    setWeeklySlots((prev: any) => ({
-      ...prev,
-      [day]: {
-        ...prev[day],
-        timeRanges: [...(prev[day]?.timeRanges || []), []],
-      },
-    }));
-  };
-
-  const handleDeleteTimeRange = (day: any, index: any) => {
-    setWeeklySlots((prev: any) => {
-      const updatedRanges =
-        prev[day]?.timeRanges.filter((_: any, i: any) => i !== index) || [];
-      return {
-        ...prev,
-        [day]: {
-          ...prev[day],
-          timeRanges: updatedRanges,
-        },
-      };
-    });
-  };
-
-  const handleSave = async (dayName: any) => {
-      if (!doctor) {
-        message.error("Please select a doctor.");
-        return;
-      }
-  
-      const dayObj = daysOfWeek.find((d) => d.name === dayName);
-      const dayId = dayObj?.id;
-      if (!dayId) {
-        message.error("Invalid day selected.");
-        return;
-      }
-  
-      const timeRanges = weeklySlots[dayName]?.timeRanges || [];
-      if (!timeRanges.every((range: any) => range.length === 2)) {
-        message.error(`Please complete all time ranges for ${dayName}.`);
-        return;
-      }
-  
-      // Check for conflicts
-      if (hasConflict(timeRanges)) {
-        message.error(`Time ranges on ${dayName} have conflicts. Please adjust.`);
-        return;
-      }
-  
-      // Normalize the time ranges and map ids for existing slots
-      const formattedRanges = timeRanges.map((range: any) => {
-        const startTimeISO = range[0];
-        const endTimeISO = range[1];
-  
-        // Format the ISO times to "hh:mm A" for comparison
-        const formattedStartTime = moment(startTimeISO).format("hh:mm A");
-        const formattedEndTime = moment(endTimeISO).format("hh:mm A");
-  
-        // Find existing slot in doctorTimeSlotData based on formatted time
-        const existingSlot = doctorTimeSlotData.find(
-          (slot: any) =>
-            slot.day === dayId &&
-            slot.doctorId === doctor &&
-            moment(slot.startTime, "hh:mm A").format("hh:mm A") === formattedStartTime &&
-            moment(slot.endTime, "hh:mm A").format("hh:mm A") === formattedEndTime
-        );
-  
-        return {
-          doctorId: doctor,
-          day: dayId,
-          startTime: formattedStartTime,
-          endTime: formattedEndTime,
-          id: existingSlot ? existingSlot.id : null, // Include id if found, else null
-        };
-      });
-  
-      try {
-        // Call API to save (insert/update) the timeslots
-        await axios.post("http://localhost:3000/timeslots", formattedRanges);
-        message.success(`${dayName}'s time slots have been saved to the database!`);
-      } catch (error) {
-        message.error(`Failed to save ${dayName}'s time slots. Please try again.`);
-        console.error(error);
-      }
-  };
-  
-
-  const handleRangeChange = (day: any, index: any, values: any) => {
-    setWeeklySlots((prev: any) => {
-      const updatedRanges = [...(prev[day]?.timeRanges || [])];
-      updatedRanges[index] = values;
-      return {
-        ...prev,
-        [day]: {
-          ...prev[day],
-          timeRanges: updatedRanges,
-        },
-      };
-    });
-  };
-
-  const hasConflict = (ranges: any[]) => {
-    const sortedRanges = ranges
-      .filter((range) => range.length === 2)
-      .sort((a, b) => a[0] - b[0]);
-    for (let i = 0; i < sortedRanges.length - 1; i++) {
-      if (sortedRanges[i][1] > sortedRanges[i + 1][0]) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  const weeklyColumns = [
+  // Table columns configuration
+  const columns = [
     {
-      title: "Day",
-      dataIndex: "day",
-      key: "day",
-      render: (day: any) => <strong>{day}</strong>,
+      title: "From",
+      dataIndex: "startTime",
     },
     {
-      title: "Active",
-      dataIndex: "active",
-      key: "active",
-      render: (_: any, record: any) => (
-        <Checkbox
-          checked={record.active}
-          onChange={(e) =>
-            setWeeklySlots((prev: any) => ({
-              ...prev,
-              [record.day]: {
-                ...prev[record.day],
-                active: e.target.checked,
-                timeRanges: prev[record.day]?.timeRanges || [],
-              },
-            }))
+      title: "To",
+      dataIndex: "endTime",
+    },
+    {
+      title: "Appointments Count",
+      dataIndex: "appointmentsCount",
+    },
+    ...[
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ].map((day) => ({
+      title: day,
+      dataIndex: day.toLowerCase(),
+      render: (value: boolean, _: any, index: number) => (
+        <Switch
+          checked={value}
+          onChange={(checked) =>
+            handleDayToggle(day.toLowerCase(), index, checked)
           }
         />
       ),
-    },
-    {
-      title: "Configure Time Slots",
-      dataIndex: "configure",
-      key: "configure",
-      render: (_: any, record: any) =>
-        record.active ? (
-          <div>
-            {(weeklySlots[record.day]?.timeRanges || []).map(
-              (range: any, index: any) => (
-                <div
-                  key={index}
-                  style={{
-                    display: "flex",
-                    gap: "10px",
-                    alignItems: "center",
-                    marginBottom: "10px",
-                  }}
-                >
-                  <RangePicker
-                    format="hh:mm A"
-                    minuteStep={5}
-                    value={range.length ? range : null}
-                    onChange={(values) =>
-                      handleRangeChange(record.day, index, values)
-                    }
-                    style={{ flex: 1 }}
-                  />
-                  <Button
-                    icon={<DeleteOutlined />}
-                    type="link"
-                    danger
-                    onClick={() => handleDeleteTimeRange(record.day, index)}
-                  />
-                </div>
-              )
-            )}
-            <Button
-              type="dashed"
-              onClick={() => handleAddTimeRange(record.day)}
-              style={{ width: "100%", marginBottom: "1rem" }}
-            >
-              + Add Time Range
-            </Button>
-            <Button
-              type="primary"
-              onClick={() => handleSave(record.day)}
-              style={{ width: "100%" }}
-            >
-              Save {record.day} Time Slots
-            </Button>
-          </div>
-        ) : (
-          <span style={{ color: "#bbb" }}>Inactive</span>
-        ),
-    },
+    })),
   ];
 
-  return (
-    <div style={{ padding: "20px" }}>
-      <h2>Select Doctor and Configure Weekly Time Slots</h2>
-      <Row gutter={[16, 16]}>
-        <Col span={6}>
-          <Select
-            placeholder="Select Doctor"
-            style={{ width: "100%" }}
-            onChange={(value) => {
-              setDoctor(value);
-              getTimeSlotDataforDoctor(value);
-            }}
-          >
-            {doctors.map((doc: any) => (
-              <Select.Option key={doc.id} value={doc.id}>
-                {doc.firstName}
-              </Select.Option>
-            ))}
-          </Select>
-        </Col>
-      </Row>
+  useEffect(() => {
+    if (doctorId) {
+      getDoctorTimeslots();
+    }
+  }, [doctorId]);
 
-      <h3 style={{ marginTop: "20px" }}>Configure Slots for Each Day</h3>
+  useEffect(() => {
+    getTimeSlotDoctors();
+  }, []);
+
+  // Fetch timeslots for a selected doctor
+  const getDoctorTimeslots = async () => {
+    try {
+      const res: any = await getaxios(
+        `http://localhost:3000/timeslots/${doctorId}`
+      );
+      if (res?.data?.length) {
+        setTimeslots(res.data[0]);
+      } else {
+        message.warning("No timeslots found for the selected doctor.");
+        setTimeslots([]);
+      }
+    } catch (error: any) {
+      message.error(error.message || "Failed to load timeslots.");
+    }
+  };
+
+  // Fetch all doctors
+  const getTimeSlotDoctors = async () => {
+    try {
+      const res: any = await getaxios(
+        "http://localhost:3000/timeslots/getdoctors"
+      );
+      if (res?.data?.length) {
+        setDoctors(res.data[0]);
+      } else {
+        message.warning("No doctors available.");
+      }
+    } catch (error: any) {
+      message.error(error.message || "Failed to load doctors.");
+    }
+  };
+
+  const handleDayToggle = (day: string, index: number, checked: boolean) => {
+    const updatedTimeslots = [...timeslots];
+    updatedTimeslots[index][day] = checked;
+    setTimeslots(updatedTimeslots);
+  };
+
+  const handleSave = async () => {
+    console.log("Saving timeslots:", timeslots);
+    const res:any=await postaxios('http://localhost:3000/timeslots',timeslots);
+    if (res) {
+      message.success("Timeslots added successfully")
+    } else {
+      message.warning("Something went wrong");
+    }
+  };
+
+  const handleAddTimeslot = () => {
+    if (!fromTime || !toTime || appointmentsCount <= 0) {
+      message.error("Please fill all fields correctly.");
+      return;
+    }
+
+    const start = moment(fromTime, "HH:mm A");
+    const end = moment(toTime, "HH:mm A");
+
+    // Ensure the time difference is exactly 1 hour or less
+    if (end.diff(start, "minutes") > 60 || end.diff(start, "minutes") <= 0) {
+      message.error("Timeslot duration should be exactly 1 hour or less.");
+      return;
+    }
+
+    // Check for overlap with existing timeslots
+    const hasOverlap = timeslots.some((slot) => {
+      const existingStart = moment(slot.startTime, "HH:mm A");
+      const existingEnd = moment(slot.endTime, "HH:mm A");
+      return start.isBefore(existingEnd) && end.isAfter(existingStart);
+    });
+
+    if (hasOverlap) {
+      message.error("This timeslot overlaps with an existing one.");
+      return;
+    }
+
+    const newTimeslot = {
+      startTime: fromTime,
+      endTime: toTime,
+      appointmentsCount,
+      sunday: false,
+      monday: false,
+      tuesday: false,
+      wednesday: false,
+      thursday: false,
+      friday: false,
+      saturday: false,
+      doctorId,
+      createdBy:User.id
+    };
+
+    setTimeslots([...timeslots, newTimeslot]);
+    handleModalClose();
+  };
+
+  // Reset modal state
+  const handleModalClose = () => {
+    setShowAddTimeslot(false);
+    setFromTime(null);
+    setToTime(null);
+    setAppointmentsCount(0);
+  };
+
+  return (
+    <div>
+      <div className="header-content">
+        <h3>Doctor's Timeslot</h3>
+      </div>
+      <div className="timeslot-header-content">
+        <Select
+          placeholder="Select Doctor"
+          style={{ width: "300px" }}
+          onChange={(val) => setDoctorId(val)}
+        >
+          {doctors.map((doctor: any) => (
+            <Select.Option key={doctor.id} value={doctor.id}>
+              {doctor.doctorName}
+            </Select.Option>
+          ))}
+        </Select>
+        <Button type="primary" onClick={() => setShowAddTimeslot(true)}>
+          +Add Timeslot
+        </Button>
+      </div>
       <Table
-        columns={weeklyColumns}
-        dataSource={daysOfWeek.map((day: any) => ({
-          day: day.name,
-          id: day.id,
-          active: weeklySlots[day.name]?.active || false,
-          timeRanges: weeklySlots[day.name]?.timeRanges || [],
-        }))}
-        rowKey="id"
+        columns={columns}
+        dataSource={timeslots}
+        rowKey={(_, index: any) => index.toString()}
         pagination={false}
-        bordered
       />
+      <div className="save-btn-content">
+        <Button type="primary" onClick={handleSave}>
+          Save
+        </Button>
+      </div>
+      <Modal
+        width={600}
+        open={showAddTimeslot}
+        onCancel={handleModalClose}
+        title="Add Timeslot"
+        okText="Add"
+        onOk={handleAddTimeslot}
+      >
+        <div className="form-container">
+          <div className="form-row">
+            <label className="form-label">From Time</label>
+            <TimePicker
+              use12Hours
+              format="h:mm A"
+              value={fromTime ? moment(fromTime, "HH:mm A") : null}
+              onChange={(val) =>
+                setFromTime(val ? val.format("HH:mm A") : null)
+              }
+            />
+          </div>
+          <div className="form-row">
+            <label className="form-label">To Time</label>
+            <TimePicker
+              use12Hours
+              format="h:mm A"
+              value={toTime ? moment(toTime, "HH:mm A") : null}
+              onChange={(val) => setToTime(val ? val.format("HH:mm A") : null)}
+            />
+          </div>
+          <div className="form-row">
+            <label className="form-label">Appointments Count</label>
+            <InputNumber
+              min={1}
+              value={appointmentsCount}
+              onChange={(val) => setAppointmentsCount(val || 0)}
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
 
-export default TimeSlots;
+export default Timeslots;

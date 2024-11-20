@@ -90,22 +90,22 @@ export const patchaxios = async (url: string, payload: any) => {
   }
 };
 
-export const deleteaxios = async (url: string) => {
+export const deleteaxios = async (url: string, payload?: any) => {
   try {
     const token: string | null = localStorage.getItem("token");
 
     if (!token) {
       throw new Error("No token found");
     }
-
     const res = await axios.delete(url, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      data: payload,
     });
 
-    return res;
+    return res.data;
   } catch (err) {
-    return err;
+    return  err;
   }
 };

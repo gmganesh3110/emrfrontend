@@ -1,10 +1,25 @@
-import { Button, Input, Pagination, Space, Spin, Table, Tooltip } from "antd";
+import {
+  Button,
+  Input,
+  message,
+  Pagination,
+  Popconfirm,
+  Space,
+  Spin,
+  Table,
+  Tooltip,
+} from "antd";
 import React, { useEffect, useState } from "react";
-import { getaxios } from "../../services/AxiosService";
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { deleteaxios, getaxios } from "../../services/AxiosService";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  QuestionCircleOutlined,
+} from "@ant-design/icons";
 import AddSpecialization from "./AddSpecialization";
 import "./Specialization.css";
 import EditSpecialization from "./EditSpecialization";
+import { useSelector } from "react-redux";
 
 const Specialization: React.FC = () => {
   const [specializations, setSpecializations] = useState([]);
@@ -18,6 +33,7 @@ const Specialization: React.FC = () => {
   const [start, setStart] = useState<number>(0);
   const [limit, setLimit] = useState<number>(5);
   const [totalCount, setTotalCount] = useState<number>(0);
+  const User = useSelector((state: any) => state.user);
 
   const columns: any = [
     {
@@ -55,13 +71,19 @@ const Specialization: React.FC = () => {
             />
           </Tooltip>
           <Tooltip title="Delete">
-            <Button
-              type="primary"
-              danger
-              shape="circle"
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(item?.id)}
-            />
+            <Popconfirm
+              title="Delete Specialization"
+              description="Are you sure to delete this Specialization?"
+              icon={<QuestionCircleOutlined style={{ color: "red" }} />}
+              onConfirm={() => handleDelete(item?.id)}
+            >
+              <Button
+                type="primary"
+                danger
+                shape="circle"
+                icon={<DeleteOutlined />}
+              />
+            </Popconfirm>
           </Tooltip>
         </Space>
       ),
@@ -73,13 +95,27 @@ const Specialization: React.FC = () => {
     setShowEditSpecialization(true);
   };
 
-  const handleDelete = (id: any) => {
-    console.log(id);
+  const handleDelete = async (id: any) => {
+    const res: any = await deleteaxios(
+      `http://localhost:3000/specializations/${id}`,
+      {
+        modifiedBy: User.id,
+      }
+    );
+    if (res) {
+      message.success("Specialization Deleted successfully");
+      handleClose();
+    } else {
+      const errorMessage =
+        res?.response?.data?.message ||
+        "Something went wrong. Please try again.";
+      message.error(errorMessage);
+    }
   };
 
   useEffect(() => {
     getAllSpecializations();
-  }, [start, limit]);
+  }, [start]);
 
   const getAllSpecializations = async () => {
     setIsLoading(true);
