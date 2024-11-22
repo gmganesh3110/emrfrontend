@@ -8,6 +8,7 @@ import AddUserRole from "./pages/UserRole/AddUserRole";
 import Specialization from "./pages/Specializations/Specialization";
 import Timeslots from "./pages/Timeslots/Timeslots";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Patients from "./pages/Patients/Patients";
 
 function App() {
   return (
@@ -70,6 +71,16 @@ function App() {
             <ProtectedRoute>
               <MenuItems>
                 <Timeslots />
+              </MenuItems>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/patients"
+          element={
+            <ProtectedRoute>
+              <MenuItems>
+                <Patients />
               </MenuItems>
             </ProtectedRoute>
           }
