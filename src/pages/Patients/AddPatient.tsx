@@ -12,6 +12,8 @@ import {
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import moment from "moment";
 
 interface AddPatientProps {
   closeAddEditPatient: () => void;
@@ -19,6 +21,7 @@ interface AddPatientProps {
 
 const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
   const navigate = useNavigate();
+  const User = useSelector((state: any) => state.user);
   const [titles] = useState([
     { label: "Mr.", value: "Mr" },
     { label: "Mrs.", value: "Mrs" },
@@ -40,12 +43,19 @@ const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
     { label: "AB-", value: "AB-" },
   ]);
 
+  const [genders] = useState([
+    { label: "Male", value: "Male" },
+    { label: "FeMale", value: "FeMale" },
+    { label: "Others", value: "Others" },
+  ]);
+
   const handleAddPatient = async (values: any) => {
     try {
-      const res: any = await axios.post(
-        "http://localhost:3000/users/addpatient",
-        values
-      );
+      const res: any = await axios.post("http://localhost:3000/patients", {
+        ...values,
+        dateOfBirth: moment(values.dateOfBirth).format("YYYY-MM-DD"),
+        createdBy: User.id,
+      });
       if (res) {
         navigate("/patients");
       }
@@ -57,12 +67,12 @@ const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
   return (
     <div>
       <Modal
-        width={1200} // Increased Modal Width
+        width={900} // Adjusted Modal Width for a more compact layout
         open={true}
         footer={null}
         onCancel={closeAddEditPatient}
       >
-        <div className="header-content" style={{ textAlign: "center" }}>
+        <div className="header-content" style={{ textAlign: "center",width:'100%' }}>
           <h2>Patient Registration</h2>
         </div>
         <div className="form-container">
@@ -73,7 +83,7 @@ const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
             wrapperCol={{ span: 16 }}
           >
             <Row gutter={24}>
-              <Col span={8}>
+              <Col span={12}>
                 <Form.Item
                   label="Title"
                   name="title"
@@ -88,7 +98,7 @@ const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
                   </Select>
                 </Form.Item>
               </Col>
-              <Col span={8}>
+              <Col span={12}>
                 <Form.Item
                   label="First Name"
                   name="firstName"
@@ -99,7 +109,10 @@ const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
                   <Input autoComplete="off" />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+            </Row>
+
+            <Row gutter={24}>
+              <Col span={12}>
                 <Form.Item
                   label="Last Name"
                   name="lastName"
@@ -110,10 +123,7 @@ const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
                   <Input autoComplete="off" />
                 </Form.Item>
               </Col>
-            </Row>
-
-            <Row gutter={24}>
-              <Col span={8}>
+              <Col span={12}>
                 <Form.Item
                   label="F/H Name"
                   name="relationName"
@@ -127,19 +137,39 @@ const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
                   <Input autoComplete="off" />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+            </Row>
+
+            <Row gutter={24}>
+              <Col span={12}>
                 <Form.Item
                   label="Date of Birth"
                   name="dateOfBirth"
                   rules={[
                     { required: true, message: "Please Enter Date of Birth" },
                   ]}
-                  style={{ width: "100%" }} // Ensure full-width wrapper
                 >
-                  <DatePicker style={{ width: "100%" }} />
+                  <DatePicker format={"DD/MM/YYYY"} style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+              <Col span={12}>
+                <Form.Item
+                  label="Gender"
+                  name="gender"
+                  rules={[{ required: true, message: "Please Select Gender" }]}
+                >
+                  <Select placeholder="Select Gender">
+                    {genders.map((item: any) => (
+                      <Select.Option key={item.value} value={item.value}>
+                        {item.label}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={24}>
+              <Col span={12}>
                 <Form.Item
                   label="Mobile Number"
                   name="mobileNumber"
@@ -150,10 +180,7 @@ const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
                   <Input autoComplete="off" />
                 </Form.Item>
               </Col>
-            </Row>
-
-            <Row gutter={24}>
-              <Col span={8}>
+              <Col span={12}>
                 <Form.Item
                   label="Age"
                   name="age"
@@ -162,7 +189,10 @@ const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
                   <InputNumber autoComplete="off" style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+            </Row>
+
+            <Row gutter={24}>
+              <Col span={12}>
                 <Form.Item
                   label="Email"
                   name="email"
@@ -174,7 +204,7 @@ const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
                   <Input autoComplete="off" />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+              <Col span={12}>
                 <Form.Item
                   label="Blood Group"
                   name="bloodGroup"
@@ -199,10 +229,7 @@ const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
                   label="Marital Status"
                   name="maritalStatus"
                   rules={[
-                    {
-                      required: true,
-                      message: "Please Select Marital Status",
-                    },
+                    { required: true, message: "Please Select Marital Status" },
                   ]}
                 >
                   <Select placeholder="Select Marital Status">
@@ -226,7 +253,7 @@ const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
             </Row>
 
             <Row gutter={24}>
-              <Col span={8}>
+              <Col span={12}>
                 <Form.Item
                   label="City"
                   name="city"
@@ -235,7 +262,7 @@ const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
                   <Input autoComplete="off" />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+              <Col span={12}>
                 <Form.Item
                   label="State"
                   name="state"
@@ -244,7 +271,10 @@ const AddPatient: React.FC<AddPatientProps> = ({ closeAddEditPatient }) => {
                   <Input autoComplete="off" />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+            </Row>
+
+            <Row gutter={24}>
+              <Col span={12}>
                 <Form.Item
                   label="Country"
                   name="country"
