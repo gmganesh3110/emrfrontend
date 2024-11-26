@@ -1,143 +1,173 @@
-import React, { useState } from "react";
-import { Row, Col, Select, Input, DatePicker, Button, Card, Table } from "antd";
+import React, { useEffect, useState } from "react";
+import {
+  Row,
+  Col,
+  Select,
+  Input,
+  DatePicker,
+  Button,
+  Card,
+  Table,
+  Space,
+  Tooltip,
+} from "antd";
+import { getaxios } from "../../services/AxiosService";
+import moment from "moment";
+import AddAppointment from "./AddAppointment";
+import {
+  CalendarOutlined,
+  EditOutlined,
+  EyeOutlined,
+} from "@ant-design/icons";
+const { Option } = Select;
 
 const Appointments: React.FC = () => {
-  const [doctorList, setDoctorList] = useState([
-    { label: "Dr. John Doe", value: "1" },
-    { label: "Dr. Jane Smith", value: "2" },
-    { label: "Dr. Alice Brown", value: "3" },
-  ]);
-
-  const [appointmentData, setAppointmentData] = useState([
-    { 
-      key: "1", 
-      time: "10:00 AM", 
-      inTime: "10:05 AM", 
-      outTime: "10:30 AM", 
-      patientId: "P001", 
-      patientName: "John Doe", 
-      visitPurpose: "General Checkup", 
-      appStatus: "Booked", 
-      billing: "$100", 
-      nextVisit: "2024-12-01",
-      actions: "View Details"
-    },
-    { 
-      key: "2", 
-      time: "11:00 AM", 
-      inTime: "11:10 AM", 
-      outTime: "11:45 AM", 
-      patientId: "P002", 
-      patientName: "Jane Smith", 
-      visitPurpose: "Follow-up Consultation", 
-      appStatus: "Review", 
-      billing: "$120", 
-      nextVisit: "2024-12-15",
-      actions: "View Details"
-    },
-    { 
-      key: "3", 
-      time: "02:00 PM", 
-      inTime: "02:05 PM", 
-      outTime: "02:25 PM", 
-      patientId: "P003", 
-      patientName: "Alice Brown", 
-      visitPurpose: "Emergency Consultation", 
-      appStatus: "In Progress", 
-      billing: "$200", 
-      nextVisit: "2024-12-20",
-      actions: "View Details"
-    },
-    { 
-      key: "4", 
-      time: "03:00 PM", 
-      inTime: "03:05 PM", 
-      outTime: "03:30 PM", 
-      patientId: "P004", 
-      patientName: "Bob Martin", 
-      visitPurpose: "Routine Checkup", 
-      appStatus: "Cancelled", 
-      billing: "$80", 
-      nextVisit: "2025-01-01",
-      actions: "View Details"
-    },
-  ]);
-
-  const [searchFilters, setSearchFilters] = useState({
-    doctor: undefined,
-    patientName: "",
-    patientId: "",
-    date: null,
+  const [date, setDate] = useState<moment.Moment | null>(moment());
+  const [doctor, setDoctor] = useState<string>("");
+  const [doctorsList, setDoctorsList] = useState([]);
+  const [status, setStatus] = useState<string>("");
+  const [patientName, setPatientName] = useState<string>("");
+  const [patientId, setPatientId] = useState<string>("");
+  const [appointmentsList, setAppointmentsList] = useState([]);
+  const [appointmentsCount, setAppointmentsCount] = useState({
+    Booked: 0,
+    Reviewed: 0,
+    Cancelled: 0,
+    InProgress: 0,
   });
+  const [showAddAppointment, setShowAppointment] = useState<boolean>(false);
 
-  const handleFilterChange = (key: string, value: any) => {
-    setSearchFilters({ ...searchFilters, [key]: value });
-  };
-
-  const handleSearch = () => {
-    console.log("Search filters", searchFilters);
-  };
-
-  const columns = [
-    { 
-      title: 'Time', 
-      dataIndex: 'time', 
-      key: 'time', 
+  const statusList = [
+    {
+      label: "Booked",
     },
-    { 
-      title: 'In Time', 
-      dataIndex: 'inTime', 
-      key: 'inTime',
+    {
+      label: "Reviewed",
     },
-    { 
-      title: 'Out Time', 
-      dataIndex: 'outTime', 
-      key: 'outTime', 
+    {
+      label: "In Progress",
     },
-    { 
-      title: 'Patient ID', 
-      dataIndex: 'patientId', 
-      key: 'patientId',
-    },
-    { 
-      title: 'Patient Name', 
-      dataIndex: 'patientName', 
-      key: 'patientName',
-    },
-    { 
-      title: 'Visit Purpose', 
-      dataIndex: 'visitPurpose', 
-      key: 'visitPurpose',
-    },
-    { 
-      title: 'App Status', 
-      dataIndex: 'appStatus', 
-      key: 'appStatus', 
-    },
-    { 
-      title: 'Billing', 
-      dataIndex: 'billing', 
-      key: 'billing',
-    },
-    { 
-      title: 'Next Visit', 
-      dataIndex: 'nextVisit', 
-      key: 'nextVisit', 
-    },
-    { 
-      title: 'Actions', 
-      dataIndex: 'actions', 
-      key: 'actions', 
-      render: (text: string) => <Button type="link">{text}</Button>,
+    {
+      label: "Cancelled",
     },
   ];
 
-  const statusCounts = {
-    Booked: appointmentData.filter(status => status.appStatus === "Booked").length,
-    Review: appointmentData.filter(status => status.appStatus === "Review").length,
-    "In Progress": appointmentData.filter(status => status.appStatus === "In Progress").length,
-    Cancelled: appointmentData.filter(status => status.appStatus === "Cancelled").length,
+  useEffect(() => {
+    getAllDoctors();
+  }, []);
+
+  useEffect(() => {
+    getAllAppointments();
+  }, []);
+
+  const getAllAppointments = async () => {
+    let obj = {
+      date:moment(date).format("YYYY-MM-DD"),
+      status,
+      doctorId:doctor||0,
+      patientId:patientId||0,
+      patientName
+    };
+    const res: any = await getaxios("http://localhost:3000/appointments", obj);
+    setAppointmentsList(res.data[0]);
   };
+
+  const getAllDoctors = async () => {
+    const res: any = await getaxios(
+      "http://localhost:3000/appointments/doctors"
+    );
+    setDoctorsList(res.data[0]);
+  };
+
+  const closeAppointment = () => {
+    setShowAppointment(false);
+  };
+
+  const columns = [
+    {
+      title: "Appointment ID",
+      dataIndex: "id",
+      key: "id",
+    },
+    {
+      title: "Time",
+      dataIndex: "timeSlot",
+      key: "time",
+    },
+    {
+      title: "InTime",
+      dataIndex: "inTime",
+      key: "inTime",
+    },
+    {
+      title: "OutTime",
+      dataIndex: "outTime",
+      key: "outTime",
+    },
+    {
+      title: "PatientID",
+      dataIndex: "patientId",
+      key: "patientId",
+    },
+    {
+      title: "Doctor",
+      dataIndex: "doctorName",
+      key: "doctorName",
+    },
+    {
+      title: "PatientName",
+      dataIndex: "patientName",
+      key: "patientName",
+    },
+    {
+      title: "Visit Purpose",
+      dataIndex: "visitPurpose",
+      key: "visitPurpose",
+    },
+    {
+      title: "App Status",
+      dataIndex: "appStatus",
+      key: "appStatus",
+    },
+    {
+      title: "Billing",
+      dataIndex: "billing",
+      key: "billing",
+    },
+    {
+      title: "Next Visit",
+      dataIndex: "nextVisit",
+      key: "nextVisit",
+    },
+    {
+      title: "Actions",
+      render: (item: any) => (
+        <Space>
+          <Tooltip title="Quick Entry">
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              // onClick={() => handleEdit(item?.id)}
+            />
+          </Tooltip>
+          <Tooltip title="View Patient">
+            <Button
+              type="default"
+              icon={<EyeOutlined />}
+              // onClick={() => handleViewPatient(item?.id)}
+            />
+          </Tooltip>
+          <Tooltip title="View Appointment">
+            <Button
+              type="dashed"
+              icon={<CalendarOutlined />}
+              // onClick={() => handleViewAppointment(item?.id)}
+            />
+          </Tooltip>
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <div style={{ padding: "20px" }}>
@@ -145,11 +175,12 @@ const Appointments: React.FC = () => {
         {/* Left Section - Search Filters */}
         <Col span={16}>
           <Card title="Search Filters" bordered={false}>
-            <Row gutter={16}>
+            <Row gutter={[16, 16]}>
+              {/* Row 1: Date Picker and Doctor Selection */}
               <Col span={12}>
                 <DatePicker
-                  value={searchFilters.date}
-                  onChange={(date) => handleFilterChange("date", date)}
+                  value={date ? moment(date, "DD/MM/YYYY") : null}
+                  onChange={(date) => setDate(moment(date, "DD/MM/YYYY"))}
                   style={{ width: "100%" }}
                   format="DD/MM/YYYY"
                   placeholder="Select Date"
@@ -159,42 +190,61 @@ const Appointments: React.FC = () => {
                 <Select
                   style={{ width: "100%" }}
                   placeholder="Select Doctor"
-                  value={searchFilters.doctor}
-                  onChange={(value) => handleFilterChange("doctor", value)}
+                  value={doctor}
+                  onChange={(value) => setDoctor(value)}
                 >
-                  {doctorList.map((doctor) => (
-                    <Select.Option key={doctor.value} value={doctor.value}>
-                      {doctor.label}
-                    </Select.Option>
+                  <Option value="">Select Doctor</Option>
+                  {doctorsList?.map((doctor: any) => (
+                    <Option key={doctor?.id} value={doctor?.id}>
+                      {doctor?.doctorName}
+                    </Option>
                   ))}
                 </Select>
               </Col>
-              <Col span={12}>
-                <Input
-                  placeholder="Enter Patient Name"
-                  value={searchFilters.patientName}
-                  onChange={(e) =>
-                    handleFilterChange("patientName", e.target.value)
-                  }
-                  style={{ width: "100%" }}
-                />
-              </Col>
-              <Col span={12}>
+
+              {/* Row 2: Patient ID, Patient Name, and Status */}
+              <Col span={8}>
                 <Input
                   placeholder="Enter Patient ID"
-                  value={searchFilters.patientId}
-                  onChange={(e) =>
-                    handleFilterChange("patientId", e.target.value)
+                  value={patientId}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setPatientId(e.target.value)
                   }
                   style={{ width: "100%" }}
                 />
               </Col>
+              <Col span={8}>
+                <Input
+                  placeholder="Enter Patient Name"
+                  value={patientName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setPatientName(e.target.value)
+                  }
+                  style={{ width: "100%" }}
+                />
+              </Col>
+              <Col span={8}>
+                <Select
+                  placeholder="Select Status"
+                  value={status}
+                  onChange={(value: string) => setStatus(value)}
+                  style={{ width: "100%" }}
+                >
+                  <Option value="">Select Status</Option>
+                  {statusList?.map((status: any) => (
+                    <Option key={status?.label} value={status?.label}>
+                      {status?.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
 
-              <Col span={8} style={{ marginTop: "16px" }}>
+              {/* Row 3: Search Button */}
+              <Col span={24} style={{ textAlign: "right" }}>
                 <Button
                   type="primary"
-                  onClick={handleSearch}
-                  style={{ width: "100%" }}
+                  onClick={getAllAppointments}
+                  style={{ width: "150px" }}
                 >
                   Search
                 </Button>
@@ -205,20 +255,20 @@ const Appointments: React.FC = () => {
 
         {/* Right Section - Appointment Status Overview */}
         <Col span={8}>
-          <Card title="Appointment Status Overview" bordered={false}>
+          <Card title="Appointments Status" bordered={false}>
             <table style={{ width: "100%" }}>
               <tbody>
                 <tr>
                   <td>Booked</td>
-                  <td>{statusCounts.Booked}</td>
-                  <td>Review</td>
-                  <td>{statusCounts.Review}</td>
+                  <td>{appointmentsCount?.Booked}</td>
+                  <td>Reviewed</td>
+                  <td>{appointmentsCount?.Reviewed}</td>
                 </tr>
                 <tr>
                   <td>In Progress</td>
-                  <td>{statusCounts["In Progress"]}</td>
+                  <td>{appointmentsCount?.InProgress}</td>
                   <td>Cancelled</td>
-                  <td>{statusCounts.Cancelled}</td>
+                  <td>{appointmentsCount?.Cancelled}</td>
                 </tr>
               </tbody>
             </table>
@@ -226,8 +276,41 @@ const Appointments: React.FC = () => {
         </Col>
       </Row>
 
-      {/* Table displaying appointment data */}
-      <Table columns={columns} dataSource={appointmentData} style={{ marginTop: "20px" }} />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginRight: "1rem",
+        }}
+      >
+        <Button type="primary" onClick={() => setShowAppointment(true)}>
+          + Appointment
+        </Button>
+      </div>
+      <div className="">
+        <Table
+          scroll={{ x: "max-content", y: 500 }} // Horizontal and vertical scrolling
+          columns={columns.map((column, index) => ({
+            ...column,
+            onCell: (record:any) => ({
+              style: {
+                textAlign: index === columns.length - 1 ? "right" : "left", // Align last column values to the right
+              },
+            }),
+          }))}
+          dataSource={appointmentsList}
+          style={{ marginTop: "20px" }}
+          pagination={false}
+        />
+      </div>
+      <div className="">
+        {showAddAppointment && (
+          <AddAppointment
+            closeAppointment={closeAppointment}
+            doctorsList={doctorsList}
+          />
+        )}
+      </div>
     </div>
   );
 };

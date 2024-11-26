@@ -101,6 +101,10 @@ const Patients: React.FC = () => {
   };
   const columns: any = [
     {
+      title: "Patient Id",
+      dataIndex: "id",
+    },
+    {
       title: "Patient Name",
       dataIndex: "patientName",
     },

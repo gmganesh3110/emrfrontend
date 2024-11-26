@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import { getaxios, postaxios } from "../../services/AxiosService";
 import {
   Button,
+  Col,
   InputNumber,
   message,
   Modal,
+  Row,
   Select,
   Switch,
   Table,
@@ -13,6 +15,7 @@ import {
 import moment from "moment";
 import "./Timeslots.css";
 import { useSelector } from "react-redux";
+const { Option } = Select;
 
 const Timeslots: React.FC = () => {
   const [doctors, setDoctors] = useState<any[]>([]);
@@ -22,6 +25,8 @@ const Timeslots: React.FC = () => {
   const [toTime, setToTime] = useState<string | null>(null);
   const [appointmentsCount, setAppointmentsCount] = useState<number>(0);
   const [timeslots, setTimeslots] = useState<any[]>([]);
+  const [timeInterval, setTimeInterval] = useState(null);
+
   const User = useSelector((state: any) => state.user);
 
   // Table columns configuration
@@ -111,9 +116,12 @@ const Timeslots: React.FC = () => {
 
   const handleSave = async () => {
     console.log("Saving timeslots:", timeslots);
-    const res:any=await postaxios('http://localhost:3000/timeslots',timeslots);
+    const res: any = await postaxios(
+      "http://localhost:3000/timeslots",
+      timeslots
+    );
     if (res) {
-      message.success("Timeslots added successfully")
+      message.success("Timeslots added successfully");
     } else {
       message.warning("Something went wrong");
     }
@@ -150,6 +158,7 @@ const Timeslots: React.FC = () => {
       startTime: fromTime,
       endTime: toTime,
       appointmentsCount,
+      timeInterval,
       sunday: false,
       monday: false,
       tuesday: false,
@@ -158,7 +167,7 @@ const Timeslots: React.FC = () => {
       friday: false,
       saturday: false,
       doctorId,
-      createdBy:User.id
+      createdBy: User.id,
     };
 
     setTimeslots([...timeslots, newTimeslot]);
@@ -178,70 +187,125 @@ const Timeslots: React.FC = () => {
       <div className="header-content">
         <h3>Doctor's Timeslot</h3>
       </div>
-      <div className="timeslot-header-content">
+
+      {/* Timeslot Header Content */}
+      <div
+        className="timeslot-header-content"
+        style={{
+          marginBottom: "20px",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+        }}
+      >
         <Select
           placeholder="Select Doctor"
           style={{ width: "300px" }}
           onChange={(val) => setDoctorId(val)}
         >
           {doctors.map((doctor: any) => (
-            <Select.Option key={doctor.id} value={doctor.id}>
+            <Option key={doctor.id} value={doctor.id}>
               {doctor.doctorName}
-            </Select.Option>
+            </Option>
           ))}
         </Select>
         <Button type="primary" onClick={() => setShowAddTimeslot(true)}>
           +Add Timeslot
         </Button>
       </div>
+
+      {/* Timeslots Table */}
       <Table
         columns={columns}
         dataSource={timeslots}
         rowKey={(_, index: any) => index.toString()}
         pagination={false}
       />
-      <div className="save-btn-content">
+
+      {/* Save Button */}
+      <div
+        className="save-btn-content"
+        style={{ marginTop: "20px", textAlign: "right" }}
+      >
         <Button type="primary" onClick={handleSave}>
           Save
         </Button>
       </div>
+
+      {/* Add Timeslot Modal */}
       <Modal
-        width={600}
+        width={500}
         open={showAddTimeslot}
         onCancel={handleModalClose}
         title="Add Timeslot"
         okText="Add"
         onOk={handleAddTimeslot}
+        bodyStyle={{
+          padding: "20px",
+        }}
       >
-        <div className="form-container">
-          <div className="form-row">
-            <label className="form-label">From Time</label>
-            <TimePicker
-              use12Hours
-              format="h:mm A"
-              value={fromTime ? moment(fromTime, "HH:mm A") : null}
-              onChange={(val) =>
-                setFromTime(val ? val.format("HH:mm A") : null)
-              }
-            />
-          </div>
-          <div className="form-row">
-            <label className="form-label">To Time</label>
-            <TimePicker
-              use12Hours
-              format="h:mm A"
-              value={toTime ? moment(toTime, "HH:mm A") : null}
-              onChange={(val) => setToTime(val ? val.format("HH:mm A") : null)}
-            />
-          </div>
-          <div className="form-row">
-            <label className="form-label">Appointments Count</label>
-            <InputNumber
-              min={1}
-              value={appointmentsCount}
-              onChange={(val) => setAppointmentsCount(val || 0)}
-            />
-          </div>
+        <div>
+          {/* From Time */}
+          <Row gutter={[16, 16]}>
+            <Col span={24}>
+              <label className="form-label">From Time</label>
+              <TimePicker
+                use12Hours
+                format="h:mm A"
+                value={fromTime ? moment(fromTime, "HH:mm A") : null}
+                onChange={(val) =>
+                  setFromTime(val ? val.format("HH:mm A") : null)
+                }
+                style={{ width: "100%" }}
+              />
+            </Col>
+          </Row>
+
+          {/* To Time */}
+          <Row gutter={[16, 16]}>
+            <Col span={24}>
+              <label className="form-label">To Time</label>
+              <TimePicker
+                use12Hours
+                format="h:mm A"
+                value={toTime ? moment(toTime, "HH:mm A") : null}
+                onChange={(val) =>
+                  setToTime(val ? val.format("HH:mm A") : null)
+                }
+                style={{ width: "100%" }}
+              />
+            </Col>
+          </Row>
+
+          {/* Appointments Count */}
+          <Row gutter={[16, 16]}>
+            <Col span={24}>
+              <label className="form-label">Appointments Count</label>
+              <InputNumber
+                min={1}
+                value={appointmentsCount}
+                onChange={(val) => setAppointmentsCount(val || 0)}
+                style={{ width: "100%" }}
+              />
+            </Col>
+          </Row>
+
+          {/* Time Interval */}
+          <Row gutter={[16, 16]}>
+            <Col span={24}>
+              <label className="form-label">Time Interval</label>
+              <Select
+                value={timeInterval}
+                onChange={(val) => setTimeInterval(val)}
+                placeholder="Select Interval"
+                style={{ width: "100%" }}
+              >
+                <Option value="5">5 Minutes</Option>
+                <Option value="10">10 Minutes</Option>
+                <Option value="15">15 Minutes</Option>
+              </Select>
+            </Col>
+          </Row>
         </div>
       </Modal>
     </div>
