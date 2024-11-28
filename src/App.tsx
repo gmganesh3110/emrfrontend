@@ -9,6 +9,7 @@ import Specialization from "./pages/Specializations/Specialization";
 import Timeslots from "./pages/Timeslots/Timeslots";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Patients from "./pages/Patients/Patients";
+import MasterVitals from "./pages/MasterVitals/MasterVitals";
 
 function App() {
   return (
@@ -81,6 +82,16 @@ function App() {
             <ProtectedRoute>
               <MenuItems>
                 <Patients />
+              </MenuItems>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mastervitals"
+          element={
+            <ProtectedRoute>
+              <MenuItems>
+                <MasterVitals />
               </MenuItems>
             </ProtectedRoute>
           }

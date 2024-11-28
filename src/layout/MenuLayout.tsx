@@ -52,7 +52,7 @@ const items: MenuItem[] = [
       {
         key: "1-5",
         icon: <DollarOutlined />,
-        label: <Link to="/patient-billing">Patient Billing</Link>,
+        label: <Link to="/billing">Patient Billing</Link>,
       },
     ],
   },
@@ -92,6 +92,11 @@ const items: MenuItem[] = [
         key: "8-2",
         icon: <ProfileOutlined />,
         label: <Link to="/specializations">Specializations</Link>,
+      },
+      {
+        key: "8-3",
+        icon: <ProfileOutlined />,
+        label: <Link to="/mastervitals">Vitals</Link>,
       },
     ],
   },

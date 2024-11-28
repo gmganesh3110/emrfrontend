@@ -14,11 +14,7 @@ import {
 import { getaxios } from "../../services/AxiosService";
 import moment from "moment";
 import AddAppointment from "./AddAppointment";
-import {
-  CalendarOutlined,
-  EditOutlined,
-  EyeOutlined,
-} from "@ant-design/icons";
+import { CalendarOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
 const { Option } = Select;
 
 const Appointments: React.FC = () => {
@@ -62,11 +58,11 @@ const Appointments: React.FC = () => {
 
   const getAllAppointments = async () => {
     let obj = {
-      date:moment(date).format("YYYY-MM-DD"),
+      date: moment(date).format("YYYY-MM-DD"),
       status,
-      doctorId:doctor||0,
-      patientId:patientId||0,
-      patientName
+      doctorId: doctor || 0,
+      patientId: patientId || 0,
+      patientName,
     };
     const res: any = await getaxios("http://localhost:3000/appointments", obj);
     setAppointmentsList(res.data[0]);
@@ -85,59 +81,48 @@ const Appointments: React.FC = () => {
 
   const columns = [
     {
-      title: "Appointment ID",
+      title: "AppointmentID",
       dataIndex: "id",
-      key: "id",
     },
     {
       title: "Time",
       dataIndex: "timeSlot",
-      key: "time",
     },
     {
       title: "InTime",
       dataIndex: "inTime",
-      key: "inTime",
     },
     {
       title: "OutTime",
       dataIndex: "outTime",
-      key: "outTime",
     },
     {
       title: "PatientID",
       dataIndex: "patientId",
-      key: "patientId",
     },
     {
       title: "Doctor",
       dataIndex: "doctorName",
-      key: "doctorName",
     },
     {
       title: "PatientName",
       dataIndex: "patientName",
-      key: "patientName",
     },
     {
       title: "Visit Purpose",
       dataIndex: "visitPurpose",
-      key: "visitPurpose",
     },
     {
       title: "App Status",
       dataIndex: "appStatus",
-      key: "appStatus",
     },
     {
       title: "Billing",
       dataIndex: "billing",
-      key: "billing",
     },
     {
       title: "Next Visit",
       dataIndex: "nextVisit",
-      key: "nextVisit",
     },
     {
       title: "Actions",
@@ -289,17 +274,8 @@ const Appointments: React.FC = () => {
       </div>
       <div className="">
         <Table
-          scroll={{ x: "max-content", y: 500 }} // Horizontal and vertical scrolling
-          columns={columns.map((column, index) => ({
-            ...column,
-            onCell: (record:any) => ({
-              style: {
-                textAlign: index === columns.length - 1 ? "right" : "left", // Align last column values to the right
-              },
-            }),
-          }))}
+          columns={columns}
           dataSource={appointmentsList}
-          style={{ marginTop: "20px" }}
           pagination={false}
         />
       </div>
