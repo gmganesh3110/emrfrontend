@@ -10,6 +10,7 @@ import Timeslots from "./pages/Timeslots/Timeslots";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Patients from "./pages/Patients/Patients";
 import MasterVitals from "./pages/MasterVitals/MasterVitals";
+import 'antd/dist/reset.css'; 
 
 function App() {
   return (

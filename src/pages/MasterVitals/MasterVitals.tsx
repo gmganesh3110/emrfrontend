@@ -3,85 +3,101 @@ import {
   EditOutlined,
   QuestionCircleOutlined,
 } from "@ant-design/icons";
-import { Button, Popconfirm, Space, Table, Tooltip } from "antd";
-import React, { useState } from "react";
+import {
+  Button,
+  Pagination,
+  Popconfirm,
+  Space,
+  Table,
+  Tooltip,
+  Row,
+  Col,
+  Input,
+} from "antd";
+import React, { useEffect, useState } from "react";
 import AddVitals from "./AddVital";
+import { deleteaxios, getaxios } from "../../services/AxiosService";
+import EditVital from "./EditVital";
+import { useSelector } from "react-redux";
 
 const MasterVitals: React.FC = () => {
-  const [vitalsData, setVitalsData] = useState([
-    {
-      id: 1,
-      name: "body_temperature",
-      shortcode: "BT",
-      displayname: "Body Temperature",
-      measurement: "Celsius (°C) / Fahrenheit (°F)",
-      description: "Monitors fever, infection, or hypothermia.",
-    },
-    {
-      id: 2,
-      name: "heart_rate",
-      shortcode: "HR",
-      displayname: "Heart Rate",
-      measurement: "Beats Per Minute (BPM)",
-      description: "Tracks the number of heartbeats per minute.",
-    },
-    {
-      id: 3,
-      name: "blood_pressure",
-      shortcode: "BP",
-      displayname: "Blood Pressure",
-      measurement: "mmHg",
-      description: "Recorded as systolic/diastolic, e.g., 120/80.",
-    },
-    {
-      id: 4,
-      name: "respiratory_rate",
-      shortcode: "RR",
-      displayname: "Respiratory Rate",
-      measurement: "Breaths Per Minute (RPM)",
-      description: "Counts breaths to assess respiratory function.",
-    },
-    {
-      id: 5,
-      name: "oxygen_saturation",
-      shortcode: "SpO2",
-      displayname: "Oxygen Saturation",
-      measurement: "Percentage (%)",
-      description: "Tracks oxygen levels in the blood.",
-    },
-    // Add more rows as needed
-  ]);
+  const [showAddVitals, setShowAddVitals] = useState<boolean>(false);
+  const [vitalsData, setVitalsData] = useState([]);
+  const [start, setStart] = useState<number>(0);
+  const [limit, setLimit] = useState<number>(5);
+  const [name, setName] = useState<string>("");
+  const [code, setCode] = useState<string>("");
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [showEditVital, setShowEditVital] = useState<boolean>(false);
+  const [editId, setEditId] = useState<number>(0);
+  const User = useSelector((state: any) => state.user);
+
+  useEffect(() => {
+    getAllVitals();
+  }, [start]);
+
+  const getAllVitals = async () => {
+    let obj = {
+      start,
+      limit,
+      name,
+      code,
+    };
+    const res: any = await getaxios("http://localhost:3000/vitals", obj);
+    setVitalsData(res.data[0]);
+    setTotalCount(res?.data[1][0].tot);
+  };
+
+  const closeModals = () => {
+    setShowEditVital(false);
+    setShowAddVitals(false);
+    getAllVitals();
+  };
+  const handlePageChange = (page: number, pageSize: number) => {
+    setStart((page - 1) * pageSize);
+    setLimit(pageSize);
+  };
+
+  const handleEdit = (id: number) => {
+    setEditId(id);
+    setShowEditVital(true);
+  };
+  const handleDelete = async (id: number) => {
+    const response: any = await deleteaxios(
+      `http://localhost:3000/vitals/${id}`,
+      {
+        modifiedBy: User.id,
+      }
+    );
+    if (response) {
+      getAllVitals();
+    }
+  };
 
   const columns = [
     {
       title: "ID",
       dataIndex: "id",
-      key: "id",
     },
     {
       title: "Name",
       dataIndex: "name",
-      key: "name",
     },
     {
       title: "Shortcode",
-      dataIndex: "shortcode",
-      key: "shortcode",
+      dataIndex: "shortCode",
     },
     {
       title: "Display Name",
-      dataIndex: "displayname",
-      key: "displayname",
+      dataIndex: "displayName",
     },
     {
       title: "Measurement",
       dataIndex: "measurement",
-      key: "measurement",
     },
     {
       title: "Description",
       dataIndex: "description",
-      key: "description",
     },
     {
       title: "Actions",
@@ -92,15 +108,15 @@ const MasterVitals: React.FC = () => {
               type="primary"
               shape="circle"
               icon={<EditOutlined />}
-              // onClick={() => handleEdit(item?.id)}
+              onClick={() => handleEdit(item?.id)}
             />
           </Tooltip>
           <Tooltip title="Delete">
             <Popconfirm
-              title="Delete Doctor"
-              description="Are you sure to delete this Doctor?"
+              title="Delete Vital"
+              description="Are you sure to delete this Vital?"
               icon={<QuestionCircleOutlined style={{ color: "red" }} />}
-              // onConfirm={() => handleDelete(item?.id)}
+              onConfirm={() => handleDelete(item?.id)}
             >
               <Button
                 type="primary"
@@ -130,13 +146,73 @@ const MasterVitals: React.FC = () => {
           <h3>Vitals</h3>
         </div>
         <div className="">
-          <Button type="primary">+&nbsp;Add Vitals</Button>
+          <Button onClick={() => setShowAddVitals(true)} type="primary">
+            +&nbsp;Add Vitals
+          </Button>
         </div>
       </div>
+      <div
+        className="search-container"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "20px",
+          alignItems: "center",
+          marginBottom: "20px",
+        }}
+      >
+        {/* First Row */}
+        <Row gutter={[16, 16]} style={{ width: "100%" }}>
+          <Col span={6}>
+            <Input
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              style={{ width: "100%" }}
+            />
+          </Col>
+          <Col span={6}>
+            <Input
+              placeholder="Code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              style={{ width: "100%" }}
+            />
+          </Col>
+          <Col span={6}>
+            <Button
+              onClick={getAllVitals}
+              type="primary"
+              style={{
+                width: "100%",
+                height: "100%",
+                padding: "8px 0",
+              }}
+            >
+              Search
+            </Button>
+          </Col>
+        </Row>
+      </div>
+
       <div>
         <Table columns={columns} dataSource={vitalsData} rowKey="id" />
+        <Pagination
+          align="end"
+          total={totalCount}
+          pageSize={limit}
+          current={start / limit + 1}
+          onChange={handlePageChange}
+        />
       </div>
-      {false && <AddVitals />}
+      <div className="">
+        {showAddVitals && <AddVitals closeModals={closeModals} />}
+      </div>
+      <div className="">
+        {showEditVital && (
+          <EditVital closeModals={closeModals} editId={editId} />
+        )}
+      </div>
     </>
   );
 };

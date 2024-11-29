@@ -1,40 +1,36 @@
-import React, { useState } from "react";
-import { Modal, Form, Input, Button } from "antd";
+import React from "react";
+import { Modal, Form, Input, Button, message } from "antd";
+import { postaxios } from "../../services/AxiosService";
+import { useSelector } from "react-redux";
 
-const AddVitals: React.FC = () => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
+interface AddVitalsProps {
+  closeModals: () => void;
+}
+
+const AddVitals: React.FC<AddVitalsProps> = ({ closeModals }) => {
   const [form] = Form.useForm();
-
-  const showModal = () => {
-    setIsModalVisible(true);
-  };
-
+  const User = useSelector((state: any) => state.user);
   const handleCancel = () => {
-    setIsModalVisible(false);
-    form.resetFields(); // Reset the form when the modal is closed
+    form.resetFields();
   };
 
-  const onFinish = (values: any) => {
-    console.log("Form Values:", values);
-    // Add your logic here to save the data (e.g., API call)
-    handleCancel(); // Close the modal after submission
+  const onFinish = async (values: any) => {
+    const res: any = await postaxios("http://localhost:3000/vitals", {...values,createdBy:User.id});
+    if (res) {
+      message.success("Vitals added successfully")
+      closeModals()
+    }
   };
 
   return (
     <div>
-      {/* Trigger Button to Open Modal */}
-      <Button type="primary" onClick={showModal}>
-        Add Vital
-      </Button>
-
-      {/* Modal Component */}
       <Modal
+        width={700}
         title="Add Vital"
-        visible={isModalVisible}
+        open={true}
         onCancel={handleCancel}
-        footer={null} // We'll use the form's button instead of modal's default footer
+        footer={null}
       >
-        {/* Form Inside the Modal */}
         <Form
           form={form}
           name="addVitals"
@@ -62,8 +58,8 @@ const AddVitals: React.FC = () => {
 
           {/* Shortcode Field */}
           <Form.Item
-            label="Shortcode"
-            name="shortcode"
+            label="ShortCode"
+            name="shortCode"
             rules={[
               { required: true, message: "Please enter a shortcode" },
               { max: 10, message: "Shortcode cannot exceed 10 characters" },
@@ -75,10 +71,13 @@ const AddVitals: React.FC = () => {
           {/* Display Name Field */}
           <Form.Item
             label="Display Name"
-            name="displayname"
+            name="displayName"
             rules={[
               { required: true, message: "Please enter the display name" },
-              { max: 100, message: "Display name cannot exceed 100 characters" },
+              {
+                max: 100,
+                message: "Display name cannot exceed 100 characters",
+              },
             ]}
           >
             <Input placeholder="Enter the display name (e.g., Body Temperature)" />
