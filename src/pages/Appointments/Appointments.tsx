@@ -15,6 +15,9 @@ import { getaxios } from "../../services/AxiosService";
 import moment from "moment";
 import AddAppointment from "./AddAppointment";
 import { CalendarOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
+import ViewPatient from "./ViewPatient";
+import ViewAppointment from "./ViewAppointment";
+import QuickEntry from "./QuickEntry";
 const { Option } = Select;
 
 const Appointments: React.FC = () => {
@@ -31,7 +34,13 @@ const Appointments: React.FC = () => {
     Cancelled: 0,
     InProgress: 0,
   });
+  const [showViewPatient, setShowViewPatient] = useState<boolean>(false);
+  const [viewPatientId, setViewPatientId] = useState<number>(0);
   const [showAddAppointment, setShowAppointment] = useState<boolean>(false);
+  const [showQuickEntry, setShowQuickEntry] = useState<boolean>(false);
+  const [appointmentId, setAppoimentId] = useState<number>(0);
+  const [showViewAppointment, setShowViewAppointment] =
+    useState<boolean>(false);
 
   const statusList = [
     {
@@ -78,6 +87,34 @@ const Appointments: React.FC = () => {
   const closeAppointment = () => {
     setShowAppointment(false);
   };
+  const handleViewPatient = (patientId: number) => {
+    setShowViewPatient(true);
+    setViewPatientId(patientId);
+  };
+
+  const closePatientView = () => {
+    setShowViewPatient(false);
+    setViewPatientId(0);
+  };
+
+  const handleViewAppointment = (appointmentId: number) => {
+    setShowViewAppointment(true);
+    setAppoimentId(appointmentId);
+  };
+
+  const closeAppointmentView = () => {
+    setShowViewAppointment(false);
+    setAppoimentId(0);
+  };
+  const closeQuickEntryView = () => {
+    setShowQuickEntry(false);
+    setAppoimentId(0);
+  };
+
+  const handleShowQuickEntry = (appointmentId: number) => {
+    setShowQuickEntry(true);
+    setAppoimentId(appointmentId);
+  };
 
   const columns = [
     {
@@ -119,6 +156,13 @@ const Appointments: React.FC = () => {
     {
       title: "Billing",
       dataIndex: "billing",
+      render: (item: any) => {
+        return (
+          <div>
+            <Button type="primary">Bill</Button>
+          </div>
+        );
+      },
     },
     {
       title: "Next Visit",
@@ -132,21 +176,21 @@ const Appointments: React.FC = () => {
             <Button
               type="primary"
               icon={<EditOutlined />}
-              // onClick={() => handleEdit(item?.id)}
+              onClick={() => handleShowQuickEntry(item?.id)}
             />
           </Tooltip>
           <Tooltip title="View Patient">
             <Button
               type="default"
               icon={<EyeOutlined />}
-              // onClick={() => handleViewPatient(item?.id)}
+              onClick={() => handleViewPatient(item?.patientId)}
             />
           </Tooltip>
           <Tooltip title="View Appointment">
             <Button
               type="dashed"
               icon={<CalendarOutlined />}
-              // onClick={() => handleViewAppointment(item?.id)}
+              onClick={() => handleViewAppointment(item?.id)}
             />
           </Tooltip>
         </Space>
@@ -283,6 +327,32 @@ const Appointments: React.FC = () => {
         {showAddAppointment && (
           <AddAppointment
             closeAppointment={closeAppointment}
+            doctorsList={doctorsList}
+          />
+        )}
+      </div>
+      <div className="">
+        {showViewPatient && (
+          <ViewPatient
+            viewPatientID={viewPatientId}
+            closePatientView={closePatientView}
+          />
+        )}
+      </div>
+      <div className="">
+        {showViewAppointment && (
+          <ViewAppointment
+            apppointmentId={appointmentId}
+            closeAppointmentView={closeAppointmentView}
+            doctorsList={doctorsList}
+          />
+        )}
+      </div>
+      <div className="">
+        {showQuickEntry && (
+          <QuickEntry
+            apppointmentId={appointmentId}
+            closeQuickEntryView={closeQuickEntryView}
             doctorsList={doctorsList}
           />
         )}
