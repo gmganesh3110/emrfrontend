@@ -98,6 +98,11 @@ const items: MenuItem[] = [
         icon: <ProfileOutlined />,
         label: <Link to="/mastervitals">Vitals</Link>,
       },
+      {
+        key: "8-4",
+        icon: <ProfileOutlined />,
+        label: <Link to="/masterresults">Results</Link>,
+      },
     ],
   },
 ];

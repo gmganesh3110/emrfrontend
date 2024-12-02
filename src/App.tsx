@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Patients from "./pages/Patients/Patients";
 import MasterVitals from "./pages/MasterVitals/MasterVitals";
 import 'antd/dist/reset.css'; 
+import MasterResults from "./pages/MasterResults/MasterResults";
 
 function App() {
   return (
@@ -93,6 +94,16 @@ function App() {
             <ProtectedRoute>
               <MenuItems>
                 <MasterVitals />
+              </MenuItems>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/masterresults"
+          element={
+            <ProtectedRoute>
+              <MenuItems>
+                <MasterResults />
               </MenuItems>
             </ProtectedRoute>
           }
