@@ -12,6 +12,7 @@ import Patients from "./pages/Patients/Patients";
 import MasterVitals from "./pages/MasterVitals/MasterVitals";
 import 'antd/dist/reset.css'; 
 import MasterResults from "./pages/MasterResults/MasterResults";
+import Paymodes from "./pages/Paymodes/Paymodes";
 
 function App() {
   return (
@@ -104,6 +105,16 @@ function App() {
             <ProtectedRoute>
               <MenuItems>
                 <MasterResults />
+              </MenuItems>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/paymodes"
+          element={
+            <ProtectedRoute>
+              <MenuItems>
+                <Paymodes />
               </MenuItems>
             </ProtectedRoute>
           }

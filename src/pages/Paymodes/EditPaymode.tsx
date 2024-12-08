@@ -2,38 +2,35 @@ import React, { useEffect, useState } from "react";
 import { Button, Form, Input, message, Modal } from "antd";
 import { getaxios, patchaxios } from "../../services/AxiosService";
 import { useSelector } from "react-redux";
-import "./Specialization.css";
+import "./Paymode.css";
 
-interface EditSpecializationProps {
+interface EditPaymodeProps {
   handleClose: () => void;
   editId: number;
 }
 
-const EditSpecialization: React.FC<EditSpecializationProps> = ({
-  handleClose,
-  editId,
-}) => {
+const EditPaymode: React.FC<EditPaymodeProps> = ({ handleClose, editId }) => {
   const User = useSelector((state: any) => state.user);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (editId) {
-      handleGetSpecialization();
+      handleGetPaymode();
     }
   }, [editId]);
 
-  const handleGetSpecialization = async () => {
+  const handleGetPaymode = async () => {
     setLoading(true);
     try {
       const res: any = await getaxios(
-        `http://localhost:3000/specializations/${editId}`
+        `http://localhost:3000/paymodes/${editId}`
       );
 
       if (res?.status === 200) {
         const data = res.data[0][0];
         form.setFieldsValue({
-          specialization: data.specialization,
+          paymode: data.paymode,
           description: data.description,
         });
       } else {
@@ -49,15 +46,15 @@ const EditSpecialization: React.FC<EditSpecializationProps> = ({
     }
   };
 
-  const handleUpdateSpecialization = async (values: any) => {
+  const handleUpdatePaymode = async (values: any) => {
     setLoading(true);
     const res: any = await patchaxios(
-      `http://localhost:3000/specializations/${editId}`,
+      `http://localhost:3000/paymodes/${editId}`,
       { ...values, modifiedBy: User.id }
     );
     setLoading(false);
     if (res?.status === 200) {
-      message.success("Specialization updated successfully");
+      message.success("Paymode updated successfully");
       handleClose();
     } else {
       const errorMessage =
@@ -72,18 +69,16 @@ const EditSpecialization: React.FC<EditSpecializationProps> = ({
       <div>
         <Form
           form={form}
-          onFinish={handleUpdateSpecialization}
+          onFinish={handleUpdatePaymode}
           layout="vertical"
           style={{ maxWidth: 600 }}
         >
           <Form.Item
-            label="Specialization"
-            name="specialization"
-            rules={[
-              { required: true, message: "Please enter the Specialization" },
-            ]}
+            label="Paymode"
+            name="paymode"
+            rules={[{ required: true, message: "Please enter the Paymode" }]}
           >
-            <Input placeholder="Enter Specialization (e.g., Cardiology, Neurology, Orthopedics)" />
+            <Input placeholder="Enter Paymode (e.g., Cash, Card, Online )" />
           </Form.Item>
           <Form.Item
             label="Description"
@@ -92,7 +87,7 @@ const EditSpecialization: React.FC<EditSpecializationProps> = ({
           >
             <Input.TextArea
               rows={4}
-              placeholder="Briefly describe the Specialization"
+              placeholder="Briefly describe the Paymode"
             />
           </Form.Item>
           <Form.Item className="align-right">
@@ -106,4 +101,4 @@ const EditSpecialization: React.FC<EditSpecializationProps> = ({
   );
 };
 
-export default EditSpecialization;
+export default EditPaymode;

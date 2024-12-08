@@ -13,6 +13,7 @@ import {
   UserOutlined,
   ProfileOutlined,
   LogoutOutlined,
+  MoneyCollectOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Button, Menu } from "antd";
@@ -102,6 +103,11 @@ const items: MenuItem[] = [
         key: "8-4",
         icon: <ProfileOutlined />,
         label: <Link to="/masterresults">Results</Link>,
+      },
+      {
+        key: "8-5",
+        icon: <MoneyCollectOutlined />,
+        label: <Link to="/paymodes">Paymodes</Link>,
       },
     ],
   },
