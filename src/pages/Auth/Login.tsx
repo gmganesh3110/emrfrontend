@@ -53,7 +53,7 @@ export default function Login() {
               {
                 type: "email",
                 required: true,
-                message: "Please enter your email!",
+                message: "Please enter your emailId!",
               },
             ]}
           >
