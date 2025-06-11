@@ -21,6 +21,8 @@ export default function Login() {
       "http://localhost:3000/auth/login",
       values
     );
+    
+
     if (res?.status === 201) {
       localStorage.setItem("token", res?.data.token);
       dispatch(setUser(res?.data));
